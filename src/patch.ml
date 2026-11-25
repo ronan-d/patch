@@ -41,6 +41,12 @@ let rec apply_hunk ~cleanly ~fuzz (last_matched_line, offset, rope) ({mine_start
   let patch_match ~search_offset =
     let mine_start = mine_start + search_offset in
     let off_mine = Stdlib.max 0 (mine_start - 1) in
+
+    (* As noted by Guido van Rossum in [a blog post][1]: "If the chunk size is 0,
+       the first number is one lower than one would expect"
+
+       [1]: https://gvanrossum.github.io/artima/unified-diff-format.html *)
+    let off_mine = if mine_len = 0 then off_mine + 1 else off_mine in
     let prefix = Rope.chop rope off_mine in
     let actual_mine = Rope.chop rope ~off:off_mine mine_len in
     let off = off_mine + mine_len in
@@ -118,9 +124,9 @@ let rec apply_hunk ~cleanly ~fuzz (last_matched_line, offset, rope) ({mine_start
 
 let to_start_len data =
   (* input being "?19,23" *)
-  match Lib.String.cut ',' (Lib.String.slice ~start:1 data) with
-  | None when data = "+1" || data = "-1" -> (1, 1)
-  | None -> invalid_arg ("start_len broken in " ^ data)
+  let s = Lib.String.slice ~start:1 data in
+  match Lib.String.cut ',' s with
+  | None -> (int_of_string s, 1)
   | Some (start, len) -> (int_of_string start, int_of_string len)
 
 let count_to_sl_sl data =

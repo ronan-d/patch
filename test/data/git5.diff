@@ -1,0 +1,6 @@
+diff --git a/git5.old b/git5.new
+index 257cc56..3bd1f0e 100644
+--- a/git5.old
++++ b/git5.new
+@@ -1,0 +2 @@ foo
++bar
